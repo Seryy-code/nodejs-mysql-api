@@ -1,16 +1,8 @@
 const express = require("express");
-
 const app = express();
+const taskRoute = require("./routes/task.routes");
 
-// app.get("/", (req, res) => {
-//   res.send("hello world!");
-// });
-
-// app.get("/task", (req, res) => {
-//   res.send("tasks for cars");
-// });
-
-const postsRoute = require("./routes/tasks");
-app.use("/tasks", postsRoute);
+app.use(express.json());
+app.use("/api", taskRoute);
 
 module.exports = app;
