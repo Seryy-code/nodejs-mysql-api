@@ -12,4 +12,9 @@ const sequelize = new Sequelize(
   }
 );
 
-module.exports = sequelize;
+const Task = require("./task")(sequelize);
+const NoteTask = require("./notetask")(sequelize);
+const PartTask = require("./parttask")(sequelize);
+const WorkTask = require("./worktask")(sequelize);
+
+module.exports = { sequelize, Task, NoteTask, PartTask, WorkTask };
