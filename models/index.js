@@ -1,4 +1,4 @@
-const { Sequelize } = require("sequelize");
+const { Sequelize, DataTypes } = require("sequelize");
 const config = require("../config/config.json")["development"];
 
 const sequelize = new Sequelize(
@@ -12,9 +12,18 @@ const sequelize = new Sequelize(
   }
 );
 
-const Task = require("./task")(sequelize);
-const NoteTask = require("./notetask")(sequelize);
-const PartTask = require("./parttask")(sequelize);
-const WorkTask = require("./worktask")(sequelize);
+const Task = require("./task")(sequelize, DataTypes);
+const NoteTask = require("./notetask")(sequelize, DataTypes);
+const PartTask = require("./parttask")(sequelize, DataTypes);
+const WorkTask = require("./worktask")(sequelize, DataTypes);
+
+Task.hasMany(NoteTask, { foreignKey: "task_id" });
+NoteTask.belongsTo(Task, { foreignKey: "task_id" });
+
+Task.hasMany(PartTask, { foreignKey: "task_id" });
+PartTask.belongsTo(Task, { foreignKey: "task_id" });
+
+Task.hasMany(WorkTask, { foreignKey: "task_id" });
+WorkTask.belongsTo(Task, { foreignKey: "task_id" });
 
 module.exports = { sequelize, Task, NoteTask, PartTask, WorkTask };
