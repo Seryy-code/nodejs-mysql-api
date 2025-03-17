@@ -1,0 +1,46 @@
+version: "3.8" # Версия Docker Compose
+
+services:
+  # Сервис для Node.js приложения
+
+  db_service:
+    image: mysql:5.7
+    container_name: db_container
+    restart: always
+    environment:
+      - MYSQL_ROOT_USER = ${MYSQL_USER}
+      - MYSQL_ROOT_PASSWORD = ${MYSQL_PASSWORD}
+      - MYSQL_DATABASE = ${MYSQL_DATABASE}
+
+    ports:
+      - "3306:3306"
+    volumes:
+      # - db_data:/var/lib/mysql
+      - ./db_data:/data/db
+  app:
+    container_name: app_container
+    restart: always
+    build: .
+    ports:
+      - "3000:3000"
+
+    command: npm start
+    depends_on:
+      - db_service
+
+  # Сервис для базы данных MySQL
+#   db:
+#     image: mysql:5.7 # Используемое изображение MySQL
+#     environment:
+#       MYSQL_ROOT_PASSWORD: example # Пароль для пользователя root
+#       MYSQL_DATABASE: mydatabase # Имя создаваемой базы данных
+#       MYSQL_USER: user # Имя пользователя базы данных
+#       MYSQL_PASSWORD: password # Пароль пользователя базы данных
+#     ports:
+#       - "3306:3306" # Пробрасываем порт 3306 на хосте в порт 3306 в контейнере
+#     volumes:
+#       - db_data:/var/lib/mysql # Монтируем том для хранения данных базы данных
+
+# # Определение томов
+# volumes:
+#   db_data:
