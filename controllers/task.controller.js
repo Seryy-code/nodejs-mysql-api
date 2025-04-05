@@ -102,39 +102,102 @@ async function update(req, res) {
       });
 
       if (Array.isArray(req.body.noteTasks)) {
-        await NoteTask.destroy({ where: { task_id: id } });
-        const noteTasks = req.body.noteTasks.map((note) => ({
-          task_id: id,
-          description: note.description,
-        }));
-        await NoteTask.bulkCreate(noteTasks);
+        const existingNoteTasks = await NoteTask.findAll({
+          where: { task_id: id },
+        });
+        const newNoteTaskIds = req.body.noteTasks.map((note) => note.id);
+
+        const noteTasksToDelete = existingNoteTasks.filter(
+          (note) => !newNoteTaskIds.includes(note.id)
+        );
+        await NoteTask.destroy({
+          where: { id: noteTasksToDelete.map((note) => note.id) },
+        });
+
+        for (const note of req.body.noteTasks) {
+          if (note.id) {
+            await NoteTask.update(
+              { description: note.description },
+              { where: { id: note.id } }
+            );
+          } else {
+            await NoteTask.create({
+              task_id: id,
+              description: note.description,
+            });
+          }
+        }
       }
 
       if (Array.isArray(req.body.partTasks)) {
-        await PartTask.destroy({ where: { task_id: id } });
-        const partTasks = req.body.partTasks.map((part) => ({
-          task_id: id,
-          name: part.name,
-          price: part.price,
-          result_price: part.result_price,
-        }));
-        await PartTask.bulkCreate(partTasks);
+        const existingPartTasks = await PartTask.findAll({
+          where: { task_id: id },
+        });
+        const newPartTaskIds = req.body.partTasks.map((part) => part.id);
+
+        const partTasksToDelete = existingPartTasks.filter(
+          (part) => !newPartTaskIds.includes(part.id)
+        );
+        await PartTask.destroy({
+          where: { id: partTasksToDelete.map((part) => part.id) },
+        });
+
+        for (const part of req.body.partTasks) {
+          if (part.id) {
+            await PartTask.update(
+              {
+                name: part.name,
+                price: part.price,
+                result_price: part.result_price,
+              },
+              { where: { id: part.id } }
+            );
+          } else {
+            await PartTask.create({
+              task_id: id,
+              name: part.name,
+              price: part.price,
+              result_price: part.result_price,
+            });
+          }
+        }
       }
 
       if (Array.isArray(req.body.workTasks)) {
-        await WorkTask.destroy({ where: { task_id: id } });
-        const workTasks = req.body.workTasks.map((work) => ({
-          task_id: id,
-          name: work.name,
-          price: work.price,
-        }));
-        await WorkTask.bulkCreate(workTasks);
+        const existingWorkTasks = await WorkTask.findAll({
+          where: { task_id: id },
+        });
+        const newWorkTaskIds = req.body.workTasks.map((work) => work.id);
+
+        const workTasksToDelete = existingWorkTasks.filter(
+          (work) => !newWorkTaskIds.includes(work.id)
+        );
+        await WorkTask.destroy({
+          where: { id: workTasksToDelete.map((work) => work.id) },
+        });
+
+        for (const work of req.body.workTasks) {
+          if (work.id) {
+            await WorkTask.update(
+              { name: work.name, price: work.price },
+              { where: { id: work.id } }
+            );
+          } else {
+            await WorkTask.create({
+              task_id: id,
+              name: work.name,
+              price: work.price,
+            });
+          }
+        }
       }
 
-      res.status(200).json({
-        message: "Task updated successfully",
-        task,
+      const updatedTask = await Task.findOne({
+        where: { id },
+        include: [NoteTask, PartTask, WorkTask],
       });
+
+      res.status(200).json(updatedTask);
     } else {
       res.status(404).json({ message: "Task not found" });
     }
